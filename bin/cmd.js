@@ -22,23 +22,33 @@ const cli = meow(
         flags: {
             output: {
                 type: "string",
-                alias: "o"
+                alias: "o",
             },
             removeQueryString: {
                 type: "boolean",
                 alias: "r",
-                default: false
+                default: false,
             },
             verbose: {
                 type: "boolean",
-                default: true
+                default: true,
             },
             dryRun: {
                 type: "boolean",
-                default: false
-            }
+                default: false,
+            },
+            filterRegex: {
+                type: "string",
+                alias: "f",
+                default: false,
+            },
+            keepMultipleEntries: {
+                type: "boolean",
+                alias: "k",
+                default: false,
+            },
         },
-        autoHelp: true
+        autoHelp: true,
     }
 );
 
@@ -52,7 +62,9 @@ try {
         verbose: cli.flags.verbose,
         dryRun: cli.flags.dryRun,
         removeQueryString: cli.flags.removeQueryString,
-        outputDir: cli.flags.output
+        outputDir: cli.flags.output,
+        filterRegex: new RegExp(cli.flags.filterRegex, "/i/"),
+        keepMultipleEntries: cli.flags.keepMultipleEntries,
     });
 } catch (error) {
     console.error(error);

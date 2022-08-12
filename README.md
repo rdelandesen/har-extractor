@@ -21,6 +21,8 @@ Install with [npm](https://www.npmjs.com/):
       --output, -o Output directory
       --remove-query-string, -r Remove query string from file path
       --dry-run Enable dry run mode
+      --filter-regex, -f Filter files to extract with a regex
+      --keep-multiple-entries Extract distinct files that have the same file path
       --verbose Show processing file path
 
     Examples

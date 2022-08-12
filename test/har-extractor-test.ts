@@ -54,4 +54,33 @@ describe("har-extractor", () => {
         });
         assert.ok(outputFiles.length === 0);
     });
+    it("should respect --keep-multiple-entries", () => {
+        const inputFile = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures/cdpn.io.har"), "utf-8"));
+        extract(inputFile, {
+            outputDir: outputDir,
+            keepMultipleEntries: true,
+        });
+        const outputFiles = glob.sync(`${outputDir}/**`, {
+            nodir: true,
+        });
+        assert.ok(outputFiles.length > 0);
+        const matchedOutputFiles = outputFiles.filter((outputFile: string) => outputFile.match(/random/));
+        assert.ok(matchedOutputFiles.length === 8);
+    });
+    it("should respect --filter-regex", () => {
+        const filterRegex = /random/;
+        const inputFile = JSON.parse(fs.readFileSync(path.join(__dirname, "fixtures/cdpn.io.har"), "utf-8"));
+        extract(inputFile, {
+            outputDir: outputDir,
+            filterRegex,
+            keepMultipleEntries: true,
+        });
+        const outputFiles = glob.sync(`${outputDir}/**`, {
+            nodir: true,
+        });
+        const expectedLength = 8;
+        assert.ok(outputFiles.length === expectedLength);
+        const matchedOutputFiles = outputFiles.filter((outputFile: string) => outputFile.match(filterRegex));
+        assert.ok(matchedOutputFiles.length === expectedLength);
+    });
 });

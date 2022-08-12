@@ -22,7 +22,7 @@ export const convertEntryAsFilePathFormat = (entry: Entry, removeQueryString: bo
     const requestURL = entry.request.url;
     const stripSchemaURL: string = humanizeUrl(removeQueryString ? requestURL.split("?")[0] : requestURL);
     const dirnames: string[] = stripSchemaURL.split("/").map((pathname) => {
-        return filenamify(pathname, {maxLength: 255});
+        return filenamify(pathname, { maxLength: 255 });
     });
     const fileName = dirnames[dirnames.length - 1];
     if (
@@ -41,15 +41,21 @@ export interface ExtractOptions {
     verbose?: boolean;
     dryRun?: boolean;
     removeQueryString?: boolean;
+    filterRegex?: RegExp;
+    keepMultipleEntries?: boolean;
 }
 
 export const extract = (harContent: Har, options: ExtractOptions) => {
+    let i = 1;
     harContent.log.entries.forEach((entry) => {
         const buffer = getEntryContentAsBuffer(entry);
         if (!buffer) {
             return;
         }
-        const outputPath = path.join(options.outputDir, convertEntryAsFilePathFormat(entry, options.removeQueryString));
+        let outputPath = path.join(options.outputDir, convertEntryAsFilePathFormat(entry, options.removeQueryString));
+        if (options.filterRegex && !outputPath.match(options.filterRegex)) {
+            return;
+        }
         if (!options.dryRun) {
             makeDir.sync(path.dirname(outputPath));
         }
@@ -57,7 +63,20 @@ export const extract = (harContent: Har, options: ExtractOptions) => {
             console.log(outputPath);
         }
         if (!options.dryRun) {
+            if (options.keepMultipleEntries) {
+                if (fs.existsSync(outputPath)) {
+                    if (fs.lstatSync(outputPath).isDirectory()) {
+                        outputPath = outputPath + i;
+                    } else {
+                        const existingBuffer = Buffer.from(fs.readFileSync(outputPath, "utf8"));
+                        if (!buffer.equals(existingBuffer)) {
+                            outputPath = outputPath + i;
+                        }
+                    }
+                }
+            }
             fs.writeFileSync(outputPath, buffer);
         }
+        i++;
     });
 };
